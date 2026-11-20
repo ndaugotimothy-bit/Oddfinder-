@@ -1,1 +1,138 @@
 
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OddFinder</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080808;color:white;font-family:Arial,sans-serif}
+header{background:#111;padding:20px;border-bottom:2px solid #d4af37}
+header h1{color:#d4af37;margin:0}
+header p{color:#aaa;margin-bottom:0}
+nav{display:flex;gap:8px;overflow-x:auto;padding:12px;background:#151515}
+nav button{background:#292929;color:white;border:0;padding:12px;border-radius:7px;white-space:nowrap}
+nav button.active{background:#d4af37;color:black}
+main{padding:16px;max-width:800px;margin:auto}
+.card{background:#151515;padding:18px;border-radius:12px;margin-bottom:15px;border:1px solid #333}
+h2{color:#d4af37}
+input{width:100%;padding:13px;margin:7px 0;background:#252525;color:white;border:1px solid #555;border-radius:7px}
+button.action{background:#d4af37;color:black;padding:13px;border:0;border-radius:7px;font-weight:bold;width:100%;margin-top:10px}
+.result{background:#252525;padding:15px;margin-top:12px;border-radius:8px;line-height:1.7}
+.green{color:#32df82}
+.red{color:#ff6464}
+.small{color:#aaa;font-size:12px}
+.page{display:none}
+.page.active{display:block}
+footer{text-align:center;color:#777;padding:20px}
+</style>
+</head>
+<body><header>
+<h1>⚡ ODDFINDER</h1>
+<p>Compare odds. Find opportunities.</p>
+</header><nav>
+<button class="active" onclick="showPage('home',this)">Home</button>
+<button onclick="showPage('compare',this)">Compare Odds</button>
+<button onclick="showPage('arbitrage',this)">Arbitrage</button>
+<button onclick="showPage('calculator',this)">Calculator</button>
+</nav><main><section id="home" class="page active">
+<div class="card">
+<h2>Welcome to OddFinder</h2>
+<p>Your betting odds comparison and arbitrage calculator.</p>
+</div>
+<div class="card">
+<h2>Our Tools</h2>
+<p>📊 Compare bookmaker odds</p>
+<p>🎯 Find arbitrage opportunities</p>
+<p>💰 Calculate potential profit</p>
+<p>⚡ Calculate betting stakes</p>
+</div>
+<div class="card">
+<h2>Getting Started</h2>
+<p>Enter odds manually to compare bookmakers and calculate possible arbitrage opportunities.</p>
+</div>
+</section><section id="compare" class="page">
+<div class="card">
+<h2>Odds Comparison</h2>
+<p class="small">Enter odds from two bookmakers for the same match and outcome.</p>
+<label>SportyBet odds</label>
+<input type="number" id="odd1" placeholder="Example: 2.10" step="0.01">
+<label>BetPawa odds</label>
+<input type="number" id="odd2" placeholder="Example: 2.20" step="0.01">
+<button class="action" onclick="compareOdds()">Compare Odds</button>
+<div id="compareResult" class="result">Your comparison will appear here.</div>
+</div>
+</section><section id="arbitrage" class="page">
+<div class="card">
+<h2>Arbitrage Finder</h2>
+<p class="small">Enter the best available odds for Home, Draw and Away for the same match.</p>
+<input type="number" id="home" placeholder="Home odds" step="0.01">
+<input type="number" id="draw" placeholder="Draw odds" step="0.01">
+<input type="number" id="away" placeholder="Away odds" step="0.01">
+<input type="number" id="budget" placeholder="Total stake (GHS)" step="0.01">
+<button class="action" onclick="findArbitrage()">Find Arbitrage</button>
+<div id="arbResult" class="result">Your arbitrage results will appear here.</div>
+</div>
+</section><section id="calculator" class="page">
+<div class="card">
+<h2>Arbitrage Calculator</h2>
+<input type="number" id="calcBudget" placeholder="Total budget (GHS)" step="0.01">
+<input type="number" id="calcOdds" placeholder="Enter odds" step="0.01">
+<button class="action" onclick="calculateReturn()">Calculate Return</button>
+<div id="calcResult" class="result">Your results will appear here.</div>
+</div>
+</section></main><footer>ODDFINDER © 2026 | Bet responsibly.</footer><script>
+function showPage(id,btn){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+btn.classList.add('active');
+}
+
+function compareOdds(){
+let a=Number(document.getElementById('odd1').value);
+let b=Number(document.getElementById('odd2').value);
+let r=document.getElementById('compareResult');
+if(a<=1||b<=1||!a||!b){r.innerHTML='Enter valid odds greater than 1.';return;}
+let best=Math.max(a,b);
+r.innerHTML='SportyBet: '+a+'<br>BetPawa: '+b+'<br><br><span class="green">Best odds: '+best+'</span><br>Bookmaker: '+(a>b?'SportyBet':b>a?'BetPawa':'Both are equal');
+}
+
+function findArbitrage(){
+let h=Number(document.getElementById('home').value);
+let d=Number(document.getElementById('draw').value);
+let a=Number(document.getElementById('away').value);
+let budget=Number(document.getElementById('budget').value);
+let r=document.getElementById('arbResult');
+if(h<=1||d<=1||a<=1||budget<=0||!h||!d||!a){r.innerHTML='Enter three valid odds and a positive budget.';return;}
+let sum=1/h+1/d+1/a;
+let margin=(1-sum)*100;
+let s1=budget*(1/h)/sum;
+let s2=budget*(1/d)/sum;
+let s3=budget*(1/a)/sum;
+let returns=budget/sum;
+let profit=returns-budget;
+r.innerHTML='Implied probability: '+(sum*100).toFixed(2)+'%<br>'+
+(h+d+a>0?'':'')+
+(sum<1?'<span class="green">ARBITRAGE FOUND!</span>':'<span class="red">NO ARBITRAGE OPPORTUNITY</span>')+
+'<br><br>Home stake: GHS '+s1.toFixed(2)+
+'<br>Draw stake: GHS '+s2.toFixed(2)+
+'<br>Away stake: GHS '+s3.toFixed(2)+
+'<br><br>Potential return: GHS '+returns.toFixed(2)+
+'<br>Potential profit: <span class="'+(profit>0?'green':'red')+'">GHS '+profit.toFixed(2)+'</span>'+
+'<br>ROI: '+margin.toFixed(2)+'%'+
+'<br><br><span class="small">Assumes all outcomes are covered at the entered odds. Actual results depend on bookmaker limits, accepted stakes, odds changes and settlement rules.</span>';
+}
+
+function calculateReturn(){
+let b=Number(document.getElementById('calcBudget').value);
+let o=Number(document.getElementById('calcOdds').value);
+let r=document.getElementById('calcResult');
+if(b<=0||o<=1||!b||!o){r.innerHTML='Enter a positive budget and odds greater than 1.';return;}
+r.innerHTML='Total stake: GHS '+b.toFixed(2)+
+'<br>Odds: '+o+
+'<br>Potential return: GHS '+(b*o).toFixed(2)+
+'<br>Potential profit: GHS '+(b*(o-1)).toFixed(2);
+}
+</script></body>
+</html>
