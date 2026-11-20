@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OddFinder</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:white;font-family:Arial,sans-serif}
+header{background:#191919;padding:22px;text-align:center;border-bottom:2px solid #d4af37}
+h1{color:#d4af37;margin:0;font-size:30px}
+header p{color:#ccc;margin-bottom:0}
+main{padding:18px;max-width:750px;margin:auto}
+.card{background:#1d1d1d;padding:18px;border-radius:12px;margin-bottom:18px}
+h2{color:#d4af37;margin-top:0}
+input{width:100%;padding:12px;margin:7px 0;background:#292929;color:white;border:1px solid #555;border-radius:7px}
+button{background:#d4af37;color:black;padding:13px;border:0;border-radius:7px;font-weight:bold;width:100%;margin-top:10px}
+.result{background:#292929;padding:14px;border-radius:8px;margin-top:12px;line-height:1.7}
+.gold{color:#d4af37;font-weight:bold}
+small{color:#aaa}
+</style>
+</head>
+<body>
+
+<header>
+<h1>ODDFINDER</h1>
+<p>Compare Odds. Find Opportunities.</p>
+</header>
+
+<main>
+
+<div class="card">
+<h2>Odds Comparison</h2>
+<p>Enter odds from two bookmakers.</p>
+
+<label>Match</label>
+<input id="match" placeholder="Example: Arsenal vs Chelsea">
+
+<h3>Bookmaker 1</h3>
+<input id="book1" placeholder="Bookmaker name">
+<input id="a1" type="number" step="0.01" placeholder="Home win odds">
+<input id="b1" type="number" step="0.01" placeholder="Draw odds">
+<input id="c1" type="number" step="0.01" placeholder="Away win odds">
+
+<h3>Bookmaker 2</h3>
+<input id="book2" placeholder="Bookmaker name">
+<input id="a2" type="number" step="0.01" placeholder="Home win odds">
+<input id="b2" type="number" step="0.01" placeholder="Draw odds">
+<input id="c2" type="number" step="0.01" placeholder="Away win odds">
+
+<button onclick="compare()">COMPARE ODDS</button>
+<div id="comparison" class="result">Your comparison will appear here.</div>
+</div>
+
+<div class="card">
+<h2>Arbitrage Calculator</h2>
+<p>Enter the best odds for each outcome.</p>
+
+<input id="home" type="number" step="0.01" placeholder="Home win odds">
+<input id="draw" type="number" step="0.01" placeholder="Draw odds">
+<input id="away" type="number" step="0.01" placeholder="Away win odds">
+<input id="stake" type="number" placeholder="Total stake (GH₵)">
+
+<button onclick="calculate()">CALCULATE</button>
+<div id="answer" class="result">Your results will appear here.</div>
+</div>
+
+<small>Demo version: odds are entered manually. Live bookmaker odds are not connected yet. Always check current odds and bookmaker rules before placing any bets.</small>
+
+</main>
+
+<script>
+function compare(){
+let names=[document.getElementById('book1').value||'Bookmaker 1',document.getElementById('book2').value||'Bookmaker 2'];
+let labels=['Home win','Draw','Away win'];
+let x=[
+[+a1.value,+b1.value,+c1.value],
+[+a2.value,+b2.value,+c2.value]
+];
+if(x.flat().some(v=>!Number.isFinite(v)||v<=1)){
+comparison.innerHTML='Please enter all six valid odds above 1.00.';
+return;
+}
+let html='<b>'+ (match.value||'Match')+'</b><br>';
+labels.forEach((label,i)=>{
+let best=Math.max(x[0][i],x[1][i]);
+let winner=x[0][i]>=x[1][i]?names[0]:names[1];
+html+=label+': <span class="gold">'+best.toFixed(2)+'</span> — '+winner+'<br>';
+});
+comparison.innerHTML=html;
+}
+function calculate(){
+let h=+home.value,d=+draw.value,a=+away.value,s=+stake.value;
+if([h,d,a,s].some(v=>!Number.isFinite(v)||v<=0)||Math.min(h,d,a)<=1){
+answer.innerHTML='Enter three valid odds above 1.00 and a stake greater than zero.';
+return;
+}
+let sum=1/h+1/d+1/a;
+let stakes=[s/h/sum,s/d/sum,s/a/sum];
+let payout=s/sum;
+let profit=payout-s;
+let percent=(1-sum)*100;
+answer.innerHTML=
+'Implied total: <span class="gold">'+(sum*100).toFixed(2)+'%</span><br>'+
+'Home stake: GH₵'+stakes[0].toFixed(2)+'<br>'+
+'Draw stake: GH₵'+stakes[1].toFixed(2)+'<br>'+
+'Away stake: GH₵'+stakes[2].toFixed(2)+'<br>'+
+'Potential return: GH₵'+payout.toFixed(2)+'<br>'+
+'Potential profit: <span class="gold">GH₵'+profit.toFixed(2)+'</span><br>'+
+'Potential margin: '+percent.toFixed(2)+'%<br>'+
+(sum<1?'<b class="gold">Potential arbitrage detected.</b>':'No arbitrage detected with these odds.');
+}
+</script>
+</body>
+</html>
